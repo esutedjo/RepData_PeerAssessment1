@@ -10,34 +10,47 @@ variables in the dataset:
 
 Loading the data set  
 
-```{r, echo=TRUE}
-data <- read.csv("activity.csv")
 
+```r
+data <- read.csv("activity.csv")
 ```
 
 #### Mean Total number of steps taken per day  
 
 Histogram  
-```{r, echo=TRUE}
+
+```r
 x <- tapply(data$steps, data$date, sum, na.rm=TRUE)
 hist(x, breaks = 30, col="blue", xlab = "Number of steps per day")
-
 ```
 
+![plot of chunk unnamed-chunk-2](figure/unnamed-chunk-2-1.png) 
+
 Mean  
-```{r, echo=TRUE}
+
+```r
 mean(x)
 ```
 
+```
+## [1] 9354.23
+```
+
 Median    
-```{r, echo=TRUE}
+
+```r
 median(x)
+```
+
+```
+## [1] 10395
 ```
 
 #### Average Daily Activity Pattern
 
 Time Series Plot  
-```{r, echo=TRUE}
+
+```r
 int.data <- aggregate(data$steps, list(interval = data$interval), mean, na.rm =TRUE)
 colnames(int.data) <- c("interval", "avesteps")
 
@@ -46,25 +59,37 @@ g <- ggplot(int.data, aes(x = interval, y = avesteps))
 g + geom_line() + labs(y = "Average steps taken across all days")
 ```
 
-Maximum 5-minute interval
-```{r, echo=TRUE}
-subset(int.data, select=interval, subset=(avesteps == max(int.data$avesteps, na.rm=TRUE)))
+![plot of chunk unnamed-chunk-5](figure/unnamed-chunk-5-1.png) 
 
+Maximum 5-minute interval
+
+```r
+subset(int.data, select=interval, subset=(avesteps == max(int.data$avesteps, na.rm=TRUE)))
+```
+
+```
+##     interval
+## 104      835
 ```
 
 #### Imputing missing values
 
 Total number of rows with missing values in the dataset: data
-```{r, echo =TRUE}
+
+```r
 sum(is.na(data$steps))
+```
+
+```
+## [1] 2304
 ```
 
 Strategy to impute missing values:  
 Replace mising value (NAs) with the mean average steps of that interval  
 
 New Dataset (new.data) with missing data filled-in
-```{r, echo=TRUE}
 
+```r
 new.data <- data
 rows <- nrow(new.data)
 
@@ -76,35 +101,53 @@ for (i in 1:rows) {
         new.data[i,]$steps <- new
     }
 }
-
 ```
 
 Checking NAs in the new dataset: new.data
-```{r, echo=TRUE}
+
+```r
 sum(is.na(new.data$steps))
 ```
 
+```
+## [1] 0
+```
+
 Histogram of the total number of steps taken each day
-```{r}
+
+```r
 z <- tapply(new.data$steps, new.data$date, sum, na.rm=TRUE)
 hist(z, breaks = 30, col="blue", xlab = "Number of steps per day (NAs imputed)")
 ```
 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10-1.png) 
+
 Mean  
-```{r, echo=TRUE}
+
+```r
 mean(z)
 ```
 
+```
+## [1] 10766.19
+```
+
 Median    
-```{r, echo=TRUE}
+
+```r
 median(z)
+```
+
+```
+## [1] 10766.19
 ```
 
 The median and mean differ after imputing NAs. The value as both increased.  
   
 
 #### Differences in activity patterns between weekdays and weekends
-```{r, echo=TRUE}
+
+```r
 days <- weekdays(as.Date(new.data$date))
 new.col <- days
 rows <- length(new.col)
@@ -120,14 +163,43 @@ for (i in 1:rows){
 
 ndata <- cbind(new.data, new.col)
 str(ndata)
+```
+
+```
+## 'data.frame':	17568 obs. of  4 variables:
+##  $ steps   : num  1.717 0.3396 0.1321 0.1509 0.0755 ...
+##  $ date    : Factor w/ 61 levels "2012-10-01","2012-10-02",..: 1 1 1 1 1 1 1 1 1 1 ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
+##  $ new.col : Factor w/ 2 levels "weekday","weekend": 1 1 1 1 1 1 1 1 1 1 ...
+```
+
+```r
 head(ndata)
 ```
 
+```
+##       steps       date interval new.col
+## 1 1.7169811 2012-10-01        0 weekday
+## 2 0.3396226 2012-10-01        5 weekday
+## 3 0.1320755 2012-10-01       10 weekday
+## 4 0.1509434 2012-10-01       15 weekday
+## 5 0.0754717 2012-10-01       20 weekday
+## 6 2.0943396 2012-10-01       25 weekday
+```
+
 #### Panel Plot
-```{r, echo=TRUE}
+
+```r
 ndata.weekend <- subset(ndata, subset=(new.col=="weekend"))
 weekend <- aggregate(ndata.weekend$steps, list(interval = ndata.weekend$interval), mean)
 nrow(weekend)
+```
+
+```
+## [1] 288
+```
+
+```r
 daytype <- rep("weekend",nrow(weekend))
 we <- cbind(weekend, daytype)
 
@@ -143,5 +215,7 @@ library(ggplot2)
 g <- ggplot(plot.data, aes(x = Interval, y = Number_of_steps))
 g + geom_line() + labs(y = "Number of steps") + facet_grid(DayType ~ .)
 ```
+
+![plot of chunk unnamed-chunk-14](figure/unnamed-chunk-14-1.png) 
 
 
